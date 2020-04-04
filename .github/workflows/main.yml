@@ -5,7 +5,7 @@ env:
 
 on:
   schedule:
-    - cron: "50 6-8,9 * * *"
+    - cron: "55 4,6,8,9 * * *"
   push:
 
 jobs:
