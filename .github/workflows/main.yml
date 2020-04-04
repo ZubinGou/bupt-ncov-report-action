@@ -5,8 +5,8 @@ env:
 
 on:
   schedule:
-    - cron: "55 4,6,8,9 * * *"
-  push:
+    - cron: "15 4,6,8,10 * * *"
+#   push:
 
 jobs:
   checker:
