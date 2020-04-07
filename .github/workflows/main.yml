@@ -1,9 +1,8 @@
 name: 'Automatically submit the 2019-nCoV report sheet of BUPT'
 
 on:
- push:
-  schedule:
-    - cron: '31/3 2 * * *' # China Standard Time (CST) = UTC + 8  
+ schedule:
+   - cron: '07/3 0,22,23 * * *' # China Standard Time (CST) = UTC + 8  
 
 jobs:
   checker:
