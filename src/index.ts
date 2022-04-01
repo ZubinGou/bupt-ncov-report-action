@@ -3,8 +3,8 @@ import * as core from "@actions/core";
 import got, { Got } from "got";
 import { CookieJar } from "tough-cookie";
 import TelegramBot from "node-telegram-bot-api";
-import { LoginForm, DailyReportForm, DailyReportResponse } from "./form";
-import { sleep, randomBetween } from "./utils";
+import { LoginForm, DailyReportForm, DailyReportResponse } from "./form.js";
+import { sleep, randomBetween } from "./utils.js";
 
 const LOGIN = "https://auth.bupt.edu.cn/authserver/login";
 const GET_REPORT = "https://app.bupt.edu.cn/ncov/wap/default/index";
@@ -18,12 +18,18 @@ async function login(
     const cookieJar = new CookieJar();
     const client = got.extend({
         cookieJar,
-        retry: RETRY,
-        timeout: TIMEOUT,
+        retry: {
+            limit: RETRY,
+            methods: ["GET", "POST"],
+        },
+        timeout: {
+            request: TIMEOUT,
+        },
+        throwHttpErrors: false,
     });
 
     // get `execution` field, will be used in post form data
-    const response = await client.get(LOGIN);
+    let response = await client.get(LOGIN);
     const execution = response.body.match(/input name="execution" value=.*><input name="_eventId"/)?.[0]?.replace('input name="execution" value="', '')?.replace('"/><input name="_eventId"', '');
 
     if (!execution) {
@@ -41,9 +47,9 @@ async function login(
 
     // login now,
     // we need the cookie, and that's it! do not follow redirects
-    const response2 = await client.post(LOGIN, { form: loginForm, followRedirect: false });
+    response = await client.post(LOGIN, { form: loginForm, followRedirect: false });
 
-    if (response2.statusCode != 302) {
+    if (response.statusCode != 302) {
         throw new Error(`login 请求返回了 ${response.statusCode}，应是 302`);
     }
 
@@ -131,13 +137,13 @@ async function postDailyReportFormData(
 
     const client = await login(loginForm);
 
-    await sleep(randomBetween(1000, 2000));
+    await sleep(randomBetween(2000, 4000));
 
     console.log("正在获取前一天的疫情填报信息");
 
     const formData = await getDailyReportFormData(client);
 
-    await sleep(randomBetween(1000, 2000));
+    await sleep(randomBetween(2000, 4000));
 
     console.log("正在提交今日疫情填报信息");
 
